@@ -24,7 +24,7 @@ export async function completeSearch(userRequest: string): Promise<string> {
     }))
   });
 
-  const prompt = `Generate 3 diverses queries for the topic: ${userRequest}`;
+  const prompt = `Générez 3 requêtes diverses pour le sujet : ${userRequest}`;
 
   // Generate structured data using generateObject
   const result = await generateObject({
@@ -42,27 +42,27 @@ export async function completeSearch(userRequest: string): Promise<string> {
   // Extract the queries from the validated response
   const queries = parsedResponse.data.queries;
 
-  let structuredText = `Search results for the topic: "${userRequest}"\n\n`;
+  let structuredText = `Résultats de recherche pour le sujet : "${userRequest}"\n\n`;
 
   for (const query of queries) {
-    structuredText += `Query: "${query}"\n`;
+    structuredText += `Requête : "${query}"\n`;
 
     // Perform the search using Tavily API
     const searchResults = await performSearch(query);
 
     // Inclure le contenu brut
-    structuredText += `Raw Results:\n${JSON.stringify(searchResults, null, 2)}\n`;
+    structuredText += `Résultats bruts :\n${JSON.stringify(searchResults, null, 2)}\n`;
 
     // Organize the results using the LLM
     const organizationPrompt = `
-Organize the following search results into a structured JSON format.
-Please return a JSON object with a property "organizedResults" that is an array of objects.
-Each object should have:
-- "Titre" (the title of the search result),
-- "Source" (the URL or source reference),
-- "Content" (a synthesized summary of the raw content).
+Organisez les résultats de recherche suivants dans un format JSON structuré.
+Veuillez renvoyer un objet JSON avec une propriété "organizedResults" qui est un tableau d'objets.
+Chaque objet doit avoir :
+- "Titre" (le titre du résultat de recherche),
+- "Source" (l'URL ou la référence de la source),
+- "Contenu" (un résumé synthétisé du contenu brut).
 
-Raw search results:
+Résultats de recherche bruts :
 ${JSON.stringify(searchResults)}
     `.trim();
 
@@ -89,8 +89,8 @@ ${JSON.stringify(searchResults)}
 
     // Check if organizedResults is empty
     if (organizedResults.length === 0) {
-      console.error('No organized results found for query:', query);
-      structuredText += `\nNo organized results found for query: ${query}\n`;
+      console.error('Aucun résultat de recherche trouvé pour la requête :', query);
+      structuredText += `\nAucun résultat de recherche trouvé pour la requête : ${query}\n`;
     } else {
       // Now you can safely iterate over organizedResults
       for (const { Titre, Source, Content } of organizedResults) {
@@ -104,7 +104,7 @@ ${JSON.stringify(searchResults)}
           console.error('Invalid organized result format: unexpected property types', { Titre, Source, Content });
           throw new Error('Invalid organized result format: unexpected property types');
         }
-        structuredText += `\nTitre: ${Titre}\nSource: ${Source}\nContent: ${Content}\n`;
+        structuredText += `\nTitre : ${Titre}\nSource : ${Source}\nContenu : ${Content}\n`;
       }
     }
 
@@ -125,7 +125,7 @@ async function performSearch(query: string, options: Record<string, any> = {}): 
   const tavilyUrl = 'https://api.tavily.com/search';
 
   try {
-    console.log(`Performing search for query: ${query}`);
+    console.log(`Recherche en cours pour la requête : ${query}`);
 
     const requestBody = {
       query,
@@ -145,21 +145,21 @@ async function performSearch(query: string, options: Record<string, any> = {}): 
     });
 
     const responseData = await response.json();
-    console.log('API Search Results:', responseData); 
+    console.log('Résultats de recherche de l\'API :', responseData); 
     if (!response.ok) {
-      console.error('API Response:', responseData); 
-      throw new Error(`Search failed: ${responseData.message || 'No error message provided'}`);
+      console.error('Réponse API :', responseData); 
+      throw new Error(`Recherche échouée : ${responseData.message || 'Aucun message d\'erreur fourni'}`);
     }
 
     // Check if search results are empty
     if (!responseData || !responseData.results || responseData.results.length === 0) {
-      console.error('No search results found for query:', query);
-      throw new Error('No search results found');
+      console.error('Aucun résultat de recherche trouvé pour la requête :', query);
+      throw new Error('Aucun résultat de recherche trouvé');
     }
 
     return responseData; 
   } catch (error) {
-    console.error('Error during search:', error);
+    console.error('Erreur lors de la recherche :', error);
     throw error; 
   }
 }

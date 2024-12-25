@@ -46,13 +46,13 @@ export function PureMessageActions({
               variant="outline"
               onClick={async () => {
                 await copyToClipboard(message.content as string);
-                toast.success('Copied to clipboard!');
+                toast.success('Copié dans le presse-papiers !');
               }}
             >
               <CopyIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Copy</TooltipContent>
+          <TooltipContent>Copier le texte</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -74,7 +74,7 @@ export function PureMessageActions({
                 });
 
                 toast.promise(upvote, {
-                  loading: 'Upvoting Response...',
+                  loading: 'Vote pour la réponse en cours...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -97,16 +97,16 @@ export function PureMessageActions({
                       { revalidate: false },
                     );
 
-                    return 'Upvoted Response!';
+                    return 'Réponse votée avec succès !';
                   },
-                  error: 'Failed to upvote response.',
+                  error: 'Échec du vote pour la réponse.',
                 });
               }}
             >
               <ThumbUpIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Upvote Response</TooltipContent>
+          <TooltipContent>Voter pour cette réponse</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -128,7 +128,7 @@ export function PureMessageActions({
                 });
 
                 toast.promise(downvote, {
-                  loading: 'Downvoting Response...',
+                  loading: 'Vote contre la réponse en cours...',
                   success: () => {
                     mutate<Array<Vote>>(
                       `/api/vote?chatId=${chatId}`,
@@ -151,16 +151,16 @@ export function PureMessageActions({
                       { revalidate: false },
                     );
 
-                    return 'Downvoted Response!';
+                    return 'Réponse votée contre avec succès !';
                   },
-                  error: 'Failed to downvote response.',
+                  error: 'Échec du vote contre la réponse.',
                 });
               }}
             >
               <ThumbDownIcon />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Downvote Response</TooltipContent>
+          <TooltipContent>Voter contre cette réponse</TooltipContent>
         </Tooltip>
       </div>
     </TooltipProvider>

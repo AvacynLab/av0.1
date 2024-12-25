@@ -429,7 +429,7 @@ function PureBlock({
 
                   {isContentDirty ? (
                     <div className="text-sm text-muted-foreground">
-                      Saving changes...
+                      Enregistrement des modifications...
                     </div>
                   ) : document ? (
                     <div className="text-sm text-muted-foreground">

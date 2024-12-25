@@ -47,7 +47,7 @@ export function QuickSearch({ searchResults = [] }: QuickSearchProps) {
               onClick={() => window.open(result.url, '_blank')}
             >
               <span className="flex items-center gap-1">
-                Visit <ArrowRightIcon className="h-4 w-4" />
+                Visiter <ArrowRightIcon className="h-4 w-4" />
               </span>
             </Button>
           </div>
@@ -56,7 +56,7 @@ export function QuickSearch({ searchResults = [] }: QuickSearchProps) {
 
       {searchResults.length > 5 && (
         <Button variant="outline" className="w-full hover:bg-primary hover:text-primary-foreground">
-          Show more results
+          Afficher plus de résultats
         </Button>
       )}
     </div>

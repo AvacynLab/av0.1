@@ -110,7 +110,7 @@ export function RunCodeButton({
       }}
       disabled={block.status === 'streaming'}
     >
-      <PlayIcon size={18} /> Run
+      <PlayIcon size={18} /> Exécuter
     </Button>
   );
 }
@@ -152,7 +152,7 @@ function PureBlockActions({
               <ClockRewind size={18} />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>View changes</TooltipContent>
+          <TooltipContent>Voir les changements</TooltipContent>
         </Tooltip>
       )}
 
@@ -169,7 +169,7 @@ function PureBlockActions({
             <UndoIcon size={18} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>View Previous version</TooltipContent>
+        <TooltipContent>Voir la version précédente</TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -185,7 +185,7 @@ function PureBlockActions({
             <RedoIcon size={18} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>View Next version</TooltipContent>
+        <TooltipContent>Voir la version suivante</TooltipContent>
       </Tooltip>
 
       <Tooltip>
@@ -195,14 +195,14 @@ function PureBlockActions({
             className="p-2 h-fit dark:hover:bg-zinc-700"
             onClick={() => {
               copyToClipboard(block.content);
-              toast.success('Copied to clipboard!');
+              toast.success('Copié dans le presse-papiers !');
             }}
             disabled={block.status === 'streaming'}
           >
             <CopyIcon size={18} />
           </Button>
         </TooltipTrigger>
-        <TooltipContent>Copy to clipboard</TooltipContent>
+        <TooltipContent>Copier dans le presse-papiers</TooltipContent>
       </Tooltip>
     </div>
   );
