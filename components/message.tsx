@@ -19,6 +19,7 @@ import { Button } from './ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
 import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
+import { QuickSearch } from './quicksearch';
 
 const PurePreviewMessage = ({
   chatId,
@@ -134,7 +135,9 @@ const PurePreviewMessage = ({
 
                     return (
                       <div key={toolCallId}>
-                        {toolName === 'getWeather' ? (
+                        {toolName === 'quickSearch' ? (
+                          <QuickSearch searchResults={result} />
+                        ) : toolName === 'getWeather' ? (
                           <Weather weatherAtLocation={result} />
                         ) : toolName === 'createDocument' ? (
                           <DocumentPreview

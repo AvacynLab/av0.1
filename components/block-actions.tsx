@@ -131,7 +131,7 @@ function PureBlockActions({
         <RunCodeButton block={block} setConsoleOutputs={setConsoleOutputs} />
       )}
 
-      {block.kind === 'text' && (
+      {block.kind === 'text' || block.kind === 'search' && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button

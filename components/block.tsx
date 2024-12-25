@@ -35,7 +35,7 @@ import { useSidebar } from './ui/sidebar';
 import { useBlock } from '@/hooks/use-block';
 import equal from 'fast-deep-equal';
 
-export type BlockKind = 'text' | 'code';
+export type BlockKind = 'text' | 'code' | 'search';
 
 export interface UIBlock {
   title: string;
@@ -462,14 +462,14 @@ function PureBlock({
                 'dark:bg-muted bg-background h-full overflow-y-scroll !max-w-full pb-40 items-center',
                 {
                   'py-2 px-2': block.kind === 'code',
-                  'py-8 md:p-20 px-4': block.kind === 'text',
+                  'py-8 md:p-20 px-4': block.kind === 'text' || block.kind === 'search',
                 },
               )}
             >
               <div
                 className={cn('flex flex-row', {
                   '': block.kind === 'code',
-                  'mx-auto max-w-[600px]': block.kind === 'text',
+                  'mx-auto max-w-[600px]': block.kind === 'text' || block.kind === 'search',
                 })}
               >
                 {isDocumentsFetching && !block.content ? (
@@ -487,7 +487,7 @@ function PureBlock({
                     status={block.status}
                     saveContent={saveContent}
                   />
-                ) : block.kind === 'text' ? (
+                ) : block.kind === 'text' || block.kind === 'search' ? (
                   mode === 'edit' ? (
                     <Editor
                       content={

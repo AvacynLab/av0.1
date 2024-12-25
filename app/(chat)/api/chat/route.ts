@@ -32,14 +32,15 @@ import {
 } from '@/lib/utils';
 
 import { generateTitleFromUserMessage } from '../../actions';
-
+import { completeSearch } from '@/lib/tools/search-engine';
 export const maxDuration = 60;
 
 type AllowedTools =
   | 'createDocument'
   | 'updateDocument'
   | 'requestSuggestions'
-  | 'getWeather';
+  | 'getWeather'
+  | 'quickSearch';
 
 const blocksTools: AllowedTools[] = [
   'createDocument',
@@ -47,10 +48,16 @@ const blocksTools: AllowedTools[] = [
   'requestSuggestions',
 ];
 
-const weatherTools: AllowedTools[] = ['getWeather'];
+const weatherTools: AllowedTools[] = ['getWeather', 'quickSearch'];
+
+
 
 const allTools: AllowedTools[] = [...blocksTools, ...weatherTools];
 
+/**
+ * Handles the POST request to the chat API.
+ * @param request - The incoming request.
+ */
 export async function POST(request: Request) {
   const {
     id,
@@ -122,12 +129,47 @@ export async function POST(request: Request) {
               return weatherData;
             },
           },
+          quickSearch: {
+            description: 'Search for information using the Tavily API.',
+            parameters: z.object({
+              query: z.string(),
+              search_depth: z.enum(['basic', 'advanced']).default('basic').describe('The depth of the search.'),
+              topic: z.enum(['general', 'news']).default('general').describe('The search topic or category.'),
+              days: z.number().optional().describe('Number of days back for news results (only applicable for "news").'),
+              max_results: z.number().default(5).describe('Maximum number of search results to return.'),
+              include_answer: z.boolean().default(true).describe('Whether to include a direct answer in the response.')
+            }),
+            execute: async ({ query, search_depth, topic, days, max_results, include_answer }) => {
+              const response = await fetch('https://api.tavily.com/search', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  api_key: process.env.TAVILY_API_KEY,
+                  query,
+                  search_depth,
+                  topic,
+                  days,
+                  max_results,
+                  include_answer,
+                }),
+              });
+              const data = await response.json();
+              return data.results?.map((result:any) => ({
+                title: result.title,
+                url: result.url,
+                content: result.content,
+                answer: result.answer, // Include answer if requested
+              }));
+            },
+          },
+    
           createDocument: {
-            description:
-              'Create a document for a writing activity. This tool will call other functions that will generate the contents of the document based on the title and kind.',
+            description: 'Create a document for a writing activity.',
             parameters: z.object({
               title: z.string(),
-              kind: z.enum(['text', 'code']),
+              kind: z.enum(['text', 'code', 'search']),
             }),
             execute: async ({ title, kind }) => {
               const id = generateUUID();
@@ -205,6 +247,33 @@ export async function POST(request: Request) {
                 }
 
                 dataStream.writeData({ type: 'finish', content: '' });
+              } else if (kind === 'search') {
+                // Perform complete search operation
+                const searchResults = await completeSearch(title);
+
+                // Pass search results to the writing agent
+                const { fullStream } = streamText({
+                  model: customModel(model.apiIdentifier),
+                  system:
+                    'Based on the search results, write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+                  prompt: searchResults,
+                });
+
+                for await (const delta of fullStream) {
+                  const { type } = delta;
+
+                  if (type === 'text-delta') {
+                    const { textDelta } = delta;
+
+                    draftText += textDelta;
+                    dataStream.writeData({
+                      type: 'text-delta',
+                      content: textDelta,
+                    });
+                  }
+                }
+
+                dataStream.writeData({ type: 'finish', content: '' });
               }
 
               if (session.user?.id) {
@@ -227,7 +296,7 @@ export async function POST(request: Request) {
             },
           },
           updateDocument: {
-            description: 'Update a document with the given description.',
+            description: 'Update a document with the given description',
             parameters: z.object({
               id: z.string().describe('The ID of the document to update'),
               description: z

@@ -219,7 +219,7 @@ const DocumentContent = ({ document }: { document: Document }) => {
   const containerClassName = cn(
     'h-[257px] overflow-y-scroll border rounded-b-2xl dark:bg-muted border-t-0 dark:border-zinc-700',
     {
-      'p-4 sm:px-14 sm:py-16': document.kind === 'text',
+      'p-4 sm:px-14 sm:py-16': document.kind === 'text' || document.kind === 'search',
       'p-0': document.kind === 'code',
     },
   );
@@ -235,7 +235,9 @@ const DocumentContent = ({ document }: { document: Document }) => {
 
   return (
     <div className={containerClassName}>
-      {document.kind === 'text' ? (
+      {document.kind === 'search' ? (
+        <Editor {...commonProps} />
+      ) : document.kind === 'text' ? (
         <Editor {...commonProps} />
       ) : document.kind === 'code' ? (
         <div className="flex flex-1 relative w-full">

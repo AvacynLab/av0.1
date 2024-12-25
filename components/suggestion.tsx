@@ -28,7 +28,7 @@ export const Suggestion = ({
       {!isExpanded ? (
         <motion.div
           className={cn('cursor-pointer text-muted-foreground p-1', {
-            'absolute -right-8': blockKind === 'text',
+            'absolute -right-8': blockKind === 'text' || blockKind === 'search',
             'sticky top-0 right-4': blockKind === 'code',
           })}
           onClick={() => {

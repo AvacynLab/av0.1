@@ -315,6 +315,23 @@ const toolsByBlockKind: Record<
       icon: <MessageIcon />,
     },
   ],
+  search: [
+    {
+      type: 'final-polish',
+      description: 'Add final polish',
+      icon: <PenIcon />,
+    },
+    {
+      type: 'adjust-reading-level',
+      description: 'Adjust reading level',
+      icon: <SummarizeIcon />,
+    },
+    {
+      type: 'request-suggestions',
+      description: 'Request suggestions',
+      icon: <MessageIcon />,
+    },
+  ],
   code: [
     {
       type: 'add-comments',
@@ -347,7 +364,7 @@ export const Tools = ({
   ) => Promise<string | null | undefined>;
   isAnimating: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
-  blockKind: 'text' | 'code';
+  blockKind: 'text' | 'code' | 'search';
 }) => {
   const [primaryTool, ...secondaryTools] = toolsByBlockKind[blockKind];
 
@@ -407,7 +424,7 @@ const PureToolbar = ({
   ) => Promise<string | null | undefined>;
   stop: () => void;
   setMessages: Dispatch<SetStateAction<Message[]>>;
-  blockKind: 'text' | 'code';
+  blockKind: 'text' | 'code' | 'search';
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
