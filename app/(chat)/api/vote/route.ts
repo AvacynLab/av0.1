@@ -6,13 +6,13 @@ export async function GET(request: Request) {
   const chatId = searchParams.get('chatId');
 
   if (!chatId) {
-    return new Response('chatId is required', { status: 400 });
+    return new Response('L’identifiant du chat est requis', { status: 400 });
   }
 
   const session = await auth();
 
   if (!session || !session.user || !session.user.email) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Non autorisé', { status: 401 });
   }
 
   const votes = await getVotesByChatId({ id: chatId });
@@ -29,13 +29,13 @@ export async function PATCH(request: Request) {
     await request.json();
 
   if (!chatId || !messageId || !type) {
-    return new Response('messageId and type are required', { status: 400 });
+    return new Response('L’identifiant du message et le type sont requis', { status: 400 });
   }
 
   const session = await auth();
 
   if (!session || !session.user || !session.user.email) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Non autorisé', { status: 401 });
   }
 
   await voteMessage({
@@ -44,5 +44,5 @@ export async function PATCH(request: Request) {
     type: type,
   });
 
-  return new Response('Message voted', { status: 200 });
+  return new Response('Message voté', { status: 200 });
 }

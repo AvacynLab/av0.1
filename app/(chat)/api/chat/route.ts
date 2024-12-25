@@ -115,7 +115,7 @@ export async function POST(request: Request) {
         experimental_activeTools: allTools,
         tools: {
           getWeather: {
-            description: 'Get the current weather at a location',
+            description: 'Obtenir la météo actuelle à un emplacement',
             parameters: z.object({
               latitude: z.number(),
               longitude: z.number(),
@@ -130,14 +130,14 @@ export async function POST(request: Request) {
             },
           },
           quickSearch: {
-            description: 'Search for information using the Tavily API.',
+            description: 'Rechercher des informations en utilisant l\'API Tavily.',
             parameters: z.object({
               query: z.string(),
-              search_depth: z.enum(['basic', 'advanced']).default('basic').describe('The depth of the search.'),
-              topic: z.enum(['general', 'news']).default('general').describe('The search topic or category.'),
-              days: z.number().optional().describe('Number of days back for news results (only applicable for "news").'),
-              max_results: z.number().default(5).describe('Maximum number of search results to return.'),
-              include_answer: z.boolean().default(true).describe('Whether to include a direct answer in the response.')
+              search_depth: z.enum(['basic', 'advanced']).default('basic').describe('La profondeur de la recherche.'),
+              topic: z.enum(['general', 'news']).default('general').describe('Le sujet ou la catégorie de recherche.'),
+              days: z.number().optional().describe('Nombre de jours pour les résultats de recherche (uniquement applicable pour "news").'),
+              max_results: z.number().default(5).describe('Nombre maximum de résultats de recherche à retourner.'),
+              include_answer: z.boolean().default(true).describe('Si une réponse directe doit être incluse dans la réponse.')
             }),
             execute: async ({ query, search_depth, topic, days, max_results, include_answer }) => {
               const response = await fetch('https://api.tavily.com/search', {
@@ -166,7 +166,7 @@ export async function POST(request: Request) {
           },
     
           createDocument: {
-            description: 'Create a document for a writing activity.',
+            description: 'Créer un document pour une activité d\'écriture.',
             parameters: z.object({
               title: z.string(),
               kind: z.enum(['text', 'code', 'search']),
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
                   system:
-                    'Write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+                    'Écrivez sur le sujet donné. Le markdown est pris en charge. Utilisez des titres lorsque cela est approprié.',
                   prompt: title,
                 });
 
@@ -255,7 +255,7 @@ export async function POST(request: Request) {
                 const { fullStream } = streamText({
                   model: customModel(model.apiIdentifier),
                   system:
-                    'Based on the search results, write about the given topic. Markdown is supported. Use headings wherever appropriate.',
+                    'Sur la base des résultats de la recherche, écrivez sur le sujet donné. Le markdown est pris en charge. Utilisez des titres lorsque cela est approprié.',
                   prompt: searchResults,
                 });
 
@@ -291,24 +291,24 @@ export async function POST(request: Request) {
                 title,
                 kind,
                 content:
-                  'A document was created and is now visible to the user.',
+                  'Un document a été créé et est maintenant visible à l\'utilisateur.',
               };
             },
           },
           updateDocument: {
-            description: 'Update a document with the given description',
+            description: 'Mettre à jour un document avec la description donnée',
             parameters: z.object({
-              id: z.string().describe('The ID of the document to update'),
+              id: z.string().describe('L\'ID du document à mettre à jour'),
               description: z
                 .string()
-                .describe('The description of changes that need to be made'),
+                .describe('La description des modifications à apporter'),
             }),
             execute: async ({ id, description }) => {
               const document = await getDocumentById({ id });
 
               if (!document) {
                 return {
-                  error: 'Document not found',
+                  error: 'Document non trouvé',
                 };
               }
 
@@ -395,23 +395,23 @@ export async function POST(request: Request) {
                 id,
                 title: document.title,
                 kind: document.kind,
-                content: 'The document has been updated successfully.',
+                content: 'Le document a été mis à jour avec succès.',
               };
             },
           },
           requestSuggestions: {
-            description: 'Request suggestions for a document',
+            description: 'Demander des suggestions pour un document',
             parameters: z.object({
               documentId: z
                 .string()
-                .describe('The ID of the document to request edits'),
+                .describe('L\'ID du document pour lequel des suggestions sont demandées'),
             }),
             execute: async ({ documentId }) => {
               const document = await getDocumentById({ id: documentId });
 
               if (!document || !document.content) {
                 return {
-                  error: 'Document not found',
+                  error: 'Document non trouvé',
                 };
               }
 
@@ -422,19 +422,19 @@ export async function POST(request: Request) {
               const { elementStream } = streamObject({
                 model: customModel(model.apiIdentifier),
                 system:
-                  'You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.',
+                  'Vous êtes un assistant d\'écriture. Étant donné un texte, proposez des suggestions pour améliorer le texte et décrivez la modification. Il est très important que les modifications contiennent des phrases complètes au lieu de simples mots. Maximum 5 suggestions.',
                 prompt: document.content,
                 output: 'array',
                 schema: z.object({
                   originalSentence: z
                     .string()
-                    .describe('The original sentence'),
+                    .describe('La phrase d\'origine'),
                   suggestedSentence: z
                     .string()
-                    .describe('The suggested sentence'),
+                    .describe('La phrase suggérée'),
                   description: z
                     .string()
-                    .describe('The description of the suggestion'),
+                    .describe('La description de la suggestion'),
                 }),
               });
 
@@ -473,7 +473,7 @@ export async function POST(request: Request) {
                 id: documentId,
                 title: document.title,
                 kind: document.kind,
-                message: 'Suggestions have been added to the document',
+                message: 'Des suggestions ont été ajoutées au document',
               };
             },
           },
