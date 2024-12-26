@@ -58,13 +58,13 @@ export default function Page() {
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-md overflow-hidden rounded-2xl flex flex-col gap-12">
             <div className="flex flex-col items-center justify-center gap-2 px-4 text-center sm:px-16">
-              <h3 className="text-xl font-semibold dark:text-zinc-50">S'inscrire</h3>
+              <h3 className="text-xl font-semibold dark:text-zinc-50">S{'&apos;'}inscrire</h3>
               <p className="text-sm text-gray-500 dark:text-zinc-400">
                 Créez un compte avec votre email et votre mot de passe
               </p>
             </div>
             <AuthForm action={handleSubmit} defaultEmail={email}>
-              <SubmitButton isSuccessful={isSuccessful}>S'inscrire</SubmitButton>
+              <SubmitButton isSuccessful={isSuccessful}>S{'&apos;'}inscrire</SubmitButton>
               <p className="text-center text-sm text-gray-600 mt-4 dark:text-zinc-400">
                 {'Vous avez déjà un compte ? '}
                 <Link
