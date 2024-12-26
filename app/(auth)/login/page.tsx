@@ -78,7 +78,7 @@ export default function Page() {
       </div>
       <div className="relative hidden bg-muted lg:block">
         <Image
-          src="/placeholder.svg"
+          src="/images/login-image.jpg"
           alt="Image"
           layout="fill"
           className="absolute inset-0 object-cover dark:brightness-[0.2] dark:grayscale"

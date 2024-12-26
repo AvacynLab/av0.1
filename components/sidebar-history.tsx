@@ -89,7 +89,7 @@ const PureChatItem = ({
             showOnHover={!isActive}
           >
             <MoreHorizontalIcon />
-            <span className="sr-only">More</span>
+            <span className="sr-only">Plus</span>
           </SidebarMenuAction>
         </DropdownMenuTrigger>
 
@@ -209,7 +209,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
     return (
       <SidebarGroup>
         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-          Aujourd'hui
+          Aujourd&#39;hui
         </div>
         <SidebarGroupContent>
           <div className="flex flex-col">
@@ -293,7 +293,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
                     {groupedChats.today.length > 0 && (
                       <>
                         <div className="px-2 py-1 text-xs text-sidebar-foreground/50">
-                          Aujourd'hui
+                          Aujourd&#39;hui
                         </div>
                         {groupedChats.today.map((chat) => (
                           <ChatItem
@@ -400,8 +400,7 @@ export function SidebarHistory({ user }: { user: User | undefined }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Êtes-vous absolument sûr ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action ne peut pas être annulée. Cela supprimera définitivement votre
-              chat et l'enlèvera de nos serveurs.
+              Cette action ne peut pas être annulée. Cela supprimera définitivement votre chat et l&apos;enlèvera de nos serveurs.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

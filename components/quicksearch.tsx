@@ -47,7 +47,7 @@ export function QuickSearch({ searchResults = [] }: QuickSearchProps) {
               onClick={() => window.open(result.url, '_blank')}
             >
               <span className="flex items-center gap-1">
-                Visiter <ArrowRightIcon className="h-4 w-4" />
+                Visiter <ArrowRightIcon className="size-4" />
               </span>
             </Button>
           </div>
