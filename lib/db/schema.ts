@@ -9,6 +9,8 @@ import {
   primaryKey,
   foreignKey,
   boolean,
+  jsonb,
+  unique,
 } from 'drizzle-orm/pg-core';
 
 export const user = pgTable('User', {
@@ -113,3 +115,38 @@ export const suggestion = pgTable(
 );
 
 export type Suggestion = InferSelectModel<typeof suggestion>;
+
+export const agents = pgTable('agents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  prompt: text('prompt'),
+  tools: jsonb('tools').$type<string[]>(),
+}, (table) => ({
+  nameUnique: unique().on(table.name)
+}));
+
+export type Agent = InferSelectModel<typeof agents>;
+
+export const tools = pgTable('tools', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  type: text('type').notNull(),
+  description: text('description'),
+  parameters: jsonb('parameters'),
+}, (table) => ({
+  nameUnique: unique().on(table.name)
+}));
+
+export type Tool = InferSelectModel<typeof tools>;
+
+export const executions = pgTable('executions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  agentId: uuid('agent_id').references(() => agents.id),
+  input: text('input').notNull(),
+  output: text('output'),
+  status: text('status').notNull(),
+  startedAt: timestamp('started_at').defaultNow(),
+  completedAt: timestamp('completed_at'),
+});
+
+export type Execution = InferSelectModel<typeof executions>;
