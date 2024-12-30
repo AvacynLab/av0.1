@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { genSaltSync, hashSync } from 'bcrypt-ts';
-import { and, asc, desc, eq, gt, gte, inArray, sql, SQL   } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, gte, inArray, like, sql, SQL,  } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -17,6 +17,7 @@ import {
   vote,
   agents, 
   tools, 
+  agentTools,
   executions
 } from './schema';
 import { BlockKind } from '@/components/block';
@@ -331,7 +332,6 @@ export async function updateChatVisiblityById({
     throw error;
   }
 }
-
 // Helper function to build paginated queries
 function buildPaginatedQuery(
   baseQuery: SQL,
@@ -348,28 +348,28 @@ export async function createAgent(data: typeof agents.$inferInsert) {
   return db.insert(agents).values(data).returning();
 }
 
-export async function getAgentById(id: string) {
-  return db.select().from(agents).where(eq(agents.id, id)).limit(1);
+export async function getAgentById(id: string, userId: string) {
+  return db.select().from(agents).where(and(eq(agents.id, id), eq(agents.userId, userId)));
 }
 
-export async function updateAgent(id: string, data: Partial<typeof agents.$inferInsert>) {
-  return db.update(agents).set(data).where(eq(agents.id, id)).returning();
+export async function updateAgent(id: string, userId: string, data: Partial<typeof agents.$inferInsert>) {
+  return db.update(agents).set(data).where(and(eq(agents.id, id), eq(agents.userId, userId))).returning();
 }
 
-export async function deleteAgent(id: string) {
-  return db.delete(agents).where(eq(agents.id, id)).returning();
+export async function deleteAgent(id: string, userId: string) {
+  return db.delete(agents).where(and(eq(agents.id, id), eq(agents.userId, userId))).returning();
 }
 
-export async function getAllAgents(page: number = 1, pageSize: number = 10, search?: string) {
-  let baseQuery = sql`SELECT * FROM ${agents}`;
+export async function getAllAgents(userId: string, page: number = 1, pageSize: number = 10, search?: string) {
+  let baseQuery = sql`SELECT * FROM ${agents} WHERE ${eq(agents.userId, userId)}`;
   if (search) {
-    baseQuery = sql`${baseQuery} WHERE ${agents.name} LIKE ${`%${search}%`}`;
+    baseQuery = sql`${baseQuery} AND ${like(agents.name, `%${search}%`)}`;
   }
   const paginatedQuery = buildPaginatedQuery(baseQuery, sql`${agents.name} DESC`, page, pageSize);
-  
+
   const [agentsData, [{ count }]] = await Promise.all([
     db.execute(paginatedQuery),
-    db.select({ count: sql`count(*)`.mapWith(Number) }).from(agents)
+    db.select({ count: sql`count(*)`.mapWith(Number) }).from(agents).where(eq(agents.userId, userId))
   ]);
 
   return {
@@ -385,32 +385,32 @@ export async function createTool(data: typeof tools.$inferInsert) {
   return db.insert(tools).values(data).returning();
 }
 
-export async function getToolById(id: string) {
-  return db.select().from(tools).where(eq(tools.id, id)).limit(1);
+export async function getToolById(id: string, userId: string) {
+  return db.select().from(tools).where(and(eq(tools.id, id), eq(tools.userId, userId)));
 }
 
-export async function getToolsByIds(ids: string[]) {
-  return db.select().from(tools).where(inArray(tools.id, ids));
+export async function getToolsByIds(ids: string[], userId: string) {
+  return db.select().from(tools).where(and(inArray(tools.id, ids), eq(tools.userId, userId)));
 }
 
-export async function updateTool(id: string, data: Partial<typeof tools.$inferInsert>) {
-  return db.update(tools).set(data).where(eq(tools.id, id)).returning();
+export async function updateTool(id: string, userId: string, data: Partial<typeof tools.$inferInsert>) {
+  return db.update(tools).set(data).where(and(eq(tools.id, id), eq(tools.userId, userId))).returning();
 }
 
-export async function deleteTool(id: string) {
-  return db.delete(tools).where(eq(tools.id, id)).returning();
+export async function deleteTool(id: string, userId: string) {
+  return db.delete(tools).where(and(eq(tools.id, id), eq(tools.userId, userId))).returning();
 }
 
-export async function getAllTools(page: number = 1, pageSize: number = 10, search?: string) {
-  let baseQuery = sql`SELECT * FROM ${tools}`;
+export async function getAllTools(userId: string, page: number = 1, pageSize: number = 10, search?: string) {
+  let baseQuery = sql`SELECT * FROM ${tools} WHERE ${eq(tools.userId, userId)}`;
   if (search) {
-    baseQuery = sql`${baseQuery} WHERE ${tools.name} LIKE ${`%${search}%`}`;
+    baseQuery = sql`${baseQuery} AND ${like(tools.name, `%${search}%`)}`;
   }
   const paginatedQuery = buildPaginatedQuery(baseQuery, sql`${tools.name} DESC`, page, pageSize);
-  
+
   const [toolsData, [{ count }]] = await Promise.all([
     db.execute(paginatedQuery),
-    db.select({ count: sql`count(*)`.mapWith(Number) }).from(tools)
+    db.select({ count: sql`count(*)`.mapWith(Number) }).from(tools).where(eq(tools.userId, userId))
   ]);
 
   return {
@@ -419,6 +419,28 @@ export async function getAllTools(page: number = 1, pageSize: number = 10, searc
     page,
     pageSize
   };
+}
+
+// Agent Tools
+export async function addToolToAgent(agentId: string, toolId: string) {
+  return db.insert(agentTools).values({ agentId, toolId }).returning();
+}
+
+export async function removeToolFromAgent(agentId: string, toolId: string) {
+  return db.delete(agentTools).where(and(eq(agentTools.agentId, agentId), eq(agentTools.toolId, toolId))).returning();
+}
+
+export async function getToolsForAgent(agentId: string) {
+  return db.select({
+    id: tools.id,
+    name: tools.name,
+    type: tools.type,
+    description: tools.description,
+    parameters: tools.parameters,
+  })
+    .from(agentTools)
+    .innerJoin(tools, eq(agentTools.toolId, tools.id))
+    .where(eq(agentTools.agentId, agentId));
 }
 
 // Executions
@@ -431,13 +453,13 @@ export async function updateExecution(id: string, data: Partial<typeof execution
 }
 
 export async function getExecutionById(id: string) {
-  return db.select().from(executions).where(eq(executions.id, id)).limit(1);
+  return db.select().from(executions).where(eq(executions.id, id));
 }
 
 export async function getExecutionsByAgentId(agentId: string, page: number = 1, pageSize: number = 10) {
-  const baseQuery = sql`SELECT * FROM ${executions} WHERE ${executions.agentId} = ${agentId}`;
+  const baseQuery = sql`SELECT * FROM ${executions} WHERE ${eq(executions.agentId, agentId)}`;
   const paginatedQuery = buildPaginatedQuery(baseQuery, sql`${executions.startedAt} DESC`, page, pageSize);
-  
+
   const [executionsData, [{ count }]] = await Promise.all([
     db.execute(paginatedQuery),
     db.select({ count: sql`count(*)`.mapWith(Number) })

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createExecution, updateExecution, getAgentById, getToolsByIds } from '@/lib/db/queries';
+import { createExecution, updateExecution, getAgentById, getToolsForAgent } from '@/lib/db/queries';
 import { generateText, CoreTool } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { z } from 'zod';
+import { auth } from '@/app/(auth)/auth';
 
 interface Tool {
   id: string;
@@ -61,32 +62,32 @@ function transformTool(tool: Tool): CoreTool<any, any> {
 }
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session || !session.user || !session.user.id) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const { agentId, input } = await req.json();
-  
-  // Récupérer l'agent
-  const [agent] = await getAgentById(agentId);
+
+  const [agent] = await getAgentById(agentId, session.user.id);
   if (!agent) {
     return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
   }
 
-  // Récupérer les outils de l'agent
-  const agentTools = agent.tools ? await getToolsByIds(agent.tools) : [];
+  const agentTools = await getToolsForAgent(agentId);
 
-  // Créer un enregistrement d'exécution
   const [execution] = await createExecution({
     agentId,
     input,
     status: 'started',
   });
 
-  // Transformer les outils en CoreTools
   const tools: Record<string, CoreTool<any, any>> = {};
   agentTools.forEach((tool) => {
     tools[tool.name] = transformTool(tool);
   });
 
   try {
-    // Utiliser le SDK AI pour traiter l'entrée
     const { text, steps } = await generateText({
       model: openai('gpt-4'),
       messages: [
@@ -94,10 +95,9 @@ export async function POST(req: Request) {
         { role: 'user', content: input }
       ],
       tools,
-      maxSteps: 5, // Allow up to 5 steps for multi-step reasoning
+      maxSteps: 5,
     });
 
-    // Mettre à jour l'enregistrement d'exécution avec le résultat
     const [updatedExecution] = await updateExecution(execution.id, {
       output: text,
       status: 'completed',
@@ -108,7 +108,6 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error('Error during execution:', error);
 
-    // Mettre à jour l'enregistrement d'exécution avec l'erreur
     const [updatedExecution] = await updateExecution(execution.id, {
       output: 'An error occurred during execution.',
       status: 'failed',

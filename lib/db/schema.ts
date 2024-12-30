@@ -118,26 +118,31 @@ export type Suggestion = InferSelectModel<typeof suggestion>;
 
 export const agents = pgTable('agents', {
   id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
   name: text('name').notNull(),
   prompt: text('prompt'),
-  tools: jsonb('tools').$type<string[]>(),
-}, (table) => ({
-  nameUnique: unique().on(table.name)
-}));
+});
 
 export type Agent = InferSelectModel<typeof agents>;
 
 export const tools = pgTable('tools', {
   id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull(),
   name: text('name').notNull(),
   type: text('type').notNull(),
   description: text('description'),
   parameters: jsonb('parameters'),
-}, (table) => ({
-  nameUnique: unique().on(table.name)
-}));
+});
 
 export type Tool = InferSelectModel<typeof tools>;
+
+export const agentTools = pgTable('agent_tools', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  agentId: uuid('agent_id').notNull().references(() => agents.id, { onDelete: 'cascade' }),
+  toolId: uuid('tool_id').notNull().references(() => tools.id, { onDelete: 'cascade' }),
+});
+
+export type AgentTool = InferSelectModel<typeof agentTools>;
 
 export const executions = pgTable('executions', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -145,7 +150,7 @@ export const executions = pgTable('executions', {
   input: text('input').notNull(),
   output: text('output'),
   status: text('status').notNull(),
-  startedAt: timestamp('started_at').defaultNow(),
+  startedAt: timestamp('started_at').notNull().defaultNow(),
   completedAt: timestamp('completed_at'),
 });
 
