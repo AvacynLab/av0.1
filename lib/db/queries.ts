@@ -51,6 +51,15 @@ export async function createUser(email: string, password: string) {
   }
 }
 
+export async function updateUser(id: string, data: Partial<typeof user.$inferInsert>) {
+  try {
+    return await db.update(user).set(data).where(eq(user.id, id)).returning();
+  } catch (error) {
+    console.error('Failed to update user in database');
+    throw error;
+  }
+}
+
 export async function saveChat({
   id,
   userId,
